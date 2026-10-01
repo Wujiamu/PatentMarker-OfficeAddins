@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\PatentOffice.Visio\PatentOffice.Visio.csproj" />
+    <ProjectReference Include="..\..\src\PatentOffice.PowerPoint\PatentOffice.PowerPoint.csproj" />
   </ItemGroup>
 
   <ItemGroup>
