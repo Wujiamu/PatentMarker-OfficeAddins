@@ -2,7 +2,7 @@
 
 本目录包含两个相互独立、面向 .NET Framework 4.0 的 Office COM 加载项。以下步骤描述 PowerPoint：它读取 Word 导出的 `.dict.json`，在已有图片上把用户绘制的 PowerPoint 直线与编号组成原生形状组，并检查整份演示文稿里的漏标编号。Visio 的安装、使用和证据范围见 [Visio 说明](visio-prototype.md)。
 
-PowerPoint 和 Visio 各自仍是独立 DLL、COM 身份、面板、绑定和标注实现。它们通过链接源码共用 Office 字典模型/只读解析器、COM 扩展接口、诊断日志实现，以及 CAD 的 `NumberIdentity`；构建不会增加 Office 公共运行时 DLL。CAD 的字典读写器、面板和宿主代码没有被 Office 加载项复用。
+PowerPoint 和 Visio 各自仍是独立 DLL、COM 身份、面板、绑定和标注实现。它们通过本仓库的链接源码共用 Office 字典模型/只读解析器、COM 扩展接口、诊断日志和编号比较实现；构建不会增加 Office 公共运行时 DLL。它们通过 `.dict.json` 文件读取 Word 导出数据，不链接 CAD 仓库代码。
 
 PowerPoint 加载项不会修改 Word、CAD 生产代码或字典文件，也不包含图片导入、CAD 式点选和字典回写。Office 2010 x86 与 Windows 7 仍待目标环境验收。
 
@@ -24,7 +24,7 @@ PowerPoint 加载项不会修改 Word、CAD 生产代码或字典文件，也不
 从仓库根目录运行：
 
 ```powershell
-./office-com-addin/verify-code.ps1
+./verify-code.ps1
 ```
 
 `verify-code.ps1` 校验 PowerShell 语法、构建两个 net40 产品、执行两组代码测试，并验证隔离安装/回滚/卸载。它要求 TRX 中实际执行的测试全部通过；无测试或跳过不能通过。CI 的 Office 独立作业运行相同入口，不依赖 Office 或 AutoCAD SDK。隔离安装采用测试用 64 位注册表视图，不探测 Office；单独运行 PPT 安装回归时也可用 `-OfficeBitness 32` 选择测试视图。实际用户安装器仍自动判断宿主位数。宿主面板操作和冷重开另行验收。
@@ -32,22 +32,22 @@ PowerPoint 加载项不会修改 Word、CAD 生产代码或字典文件，也不
 需要分别执行时：
 
 ```powershell
-./office-com-addin/build.ps1
-dotnet test ./office-com-addin/tests/PatentOffice.PowerPoint.CodeTests/PatentOffice.PowerPoint.CodeTests.csproj --configuration Release --nologo -v minimal
-./office-com-addin/build-visio.ps1
-dotnet test ./office-com-addin/tests/PatentOffice.Visio.CodeTests/PatentOffice.Visio.CodeTests.csproj --configuration Release --nologo -v minimal
-./office-com-addin/verify-installer.ps1
-./office-com-addin/package-ppt.ps1
-./office-com-addin/verify-visio-installer.ps1
-./office-com-addin/package-visio.ps1
+./build.ps1
+dotnet test ./tests/PatentOffice.PowerPoint.CodeTests/PatentOffice.PowerPoint.CodeTests.csproj --configuration Release --nologo -v minimal
+./build-visio.ps1
+dotnet test ./tests/PatentOffice.Visio.CodeTests/PatentOffice.Visio.CodeTests.csproj --configuration Release --nologo -v minimal
+./verify-installer.ps1
+./package-ppt.ps1
+./verify-visio-installer.ps1
+./package-visio.ps1
 ```
 
-两组 Office 代码测试都验证链接到产品程序集的公共字典解析行为和 COM 扩展接口契约；Visio 另测其形状绑定/扫描行为。`NumberIdentity` 是 CAD 与 Office 共用的源码，修改后还应运行 CAD 编号测试及五版构建。
+两组 Office 代码测试都验证链接到产品程序集的公共字典解析行为和 COM 扩展接口契约；Visio 另测其形状绑定/扫描行为。`NumberIdentity.cs` 在本仓库维护一份符合字典协议的实现，比较规则为去首尾空格并忽略大小写。对应协议见 [字典文件契约](docs/dictionary-contract.md)；修改比较规则时应同步评估 CAD 仓库的实现和跨仓库测试。
 
-发布 ZIP 位于 `office-com-addin/release/`，由 `verify-ppt-package.ps1` 核对文件清单和哈希。解压整个 ZIP 后关闭 PowerPoint，在解压目录运行 `./install-office-addin.ps1`。安装器把加载项 DLL 与 Newtonsoft.Json DLL 安装到 `%LOCALAPPDATA%\PatentMarker\OfficeAddin\PowerPoint`，并只写当前用户的 COM 类及 PowerPoint AddIns 注册项。升级时先暂存新文件和注册状态；失败会恢复旧版。卸载：
+发布 ZIP 位于 `release/`，由 `verify-ppt-package.ps1` 核对文件清单和哈希。解压整个 ZIP 后关闭 PowerPoint，在解压目录运行 `./install-office-addin.ps1`。安装器把加载项 DLL 与 Newtonsoft.Json DLL 安装到 `%LOCALAPPDATA%\PatentMarker\OfficeAddin\PowerPoint`，并只写当前用户的 COM 类及 PowerPoint AddIns 注册项。升级时先暂存新文件和注册状态；失败会恢复旧版。卸载：
 
 ```powershell
-./office-com-addin/uninstall-office-addin.ps1
+./uninstall-office-addin.ps1
 ```
 
 安装器要求产品所有权清单、目录文件清单和哈希匹配；目录混入未登记文件时拒绝覆盖或卸载。卸载只移除产品文件及 GUID、ProgID、AddIns 专属注册项。不要手动移动 DLL，否则 COM CodeBase 路径会失效。
@@ -61,7 +61,7 @@ dotnet test ./office-com-addin/tests/PatentOffice.Visio.CodeTests/PatentOffice.V
 `verify-visio-host-com.ps1` 是调用内部方法的真实 COM 白盒诊断，不覆盖面板用户路径。为保持与 net40 产品一致的运行时，使用 Windows PowerShell 5.1 的 STA 模式，先正常启动一份仅供测试的 Visio 实例：
 
 ```powershell
-powershell.exe -NoProfile -STA -File ./office-com-addin/verify-visio-host-com.ps1 -DictionaryPath <脱敏字典完整路径>
+powershell.exe -NoProfile -STA -File ./verify-visio-host-com.ps1 -DictionaryPath <脱敏字典完整路径>
 ```
 
 该脚本自行创建并关闭临时图稿，不关闭宿主或其他图稿。PowerShell Core 调用在宿主变更前输出 SKIP 并非零退出；显式 `-SkipNegativeCases` 会把总体结果记为 SKIP。本机完整负例在 Windows PowerShell 5.1 STA 已通过，旧 Core 环境停顿的根因尚未完全定位。
@@ -80,7 +80,7 @@ Visio 补验带静态连接点的导入 PNG，原生粘合、标注、图片移�
 
 历史 Visio 回归的三个必要负例曾跳过却输出总体 PASS，已将结论更正为 SKIP；当天代码测试也未覆盖这些标注入口负例，本次补齐并通过故障注入验证。详见[2026-09-28 历史记录](test-evidence/office-cold-start-20260928.md)。
 
-2026-09-28 的 Office 公共源码抽取、PowerPoint 新代码测试和 `NumberIdentity.Comparer` 去空格比较已完成；PPT/Visio 代码测试、CAD 2025 单测和五版 CAD 编译记录见本报告历史条目。Windows 7 + Office 2010 x86 仍待目标环境验收。旧的 0.1.1.0 L3 结论仅适用于对应历史 ZIP/DLL，详见[PowerPoint 0.1.1 验收记录](ppt-release-validation.md)与[可行性报告](feasibility-report.md)。
+2026-09-28 的 Office 公共源码抽取、PowerPoint 新代码测试和编号比较契约实现已完成；PPT/Visio 代码测试记录见本报告历史条目。2026-10-09 起 Office 加载项单独维护，不再链接 CAD 源码；字典接口和跨仓维护要求见[字典文件契约](docs/dictionary-contract.md)。Windows 7 + Office 2010 x86 仍待目标环境验收。旧的 0.1.1.0 L3 结论仅适用于对应历史 ZIP/DLL，详见[PowerPoint 0.1.1 验收记录](ppt-release-validation.md)与[可行性报告](feasibility-report.md)。
 
 准备发布时可使用 [PPT 发布说明](ppt-github-release-notes.md) 和 [Visio 发布说明](visio-github-release-notes.md)，上传推送前记录中校验过的最终 ZIP。
 

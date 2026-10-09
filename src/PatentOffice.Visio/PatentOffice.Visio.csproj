@@ -33,6 +33,6 @@
     <Compile Include="..\PatentOffice.Shared\OfficeDiagnostics.cs" Link="Shared\OfficeDiagnostics.cs" />
     <Compile Include="..\PatentOffice.Shared\PatentDictionary.cs" Link="Shared\PatentDictionary.cs" />
     <Compile Include="..\PatentOffice.Shared\DictionaryReader.cs" Link="Shared\DictionaryReader.cs" />
-    <Compile Include="..\..\..\cad-plugin\Shared\IO\NumberIdentity.cs" Link="IO\NumberIdentity.cs" />
+    <Compile Include="..\PatentOffice.Shared\NumberIdentity.cs" Link="IO\NumberIdentity.cs" />
   </ItemGroup>
 </Project>

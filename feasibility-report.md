@@ -1,8 +1,8 @@
 # Word → Office 只读标图原型：可行性与验收记录
 
-- **记录日期**：2026-10-03；以下历史条目保留原测试日期与对应制品版本
+- **记录日期**：2026-10-09；历史条目保留原测试日期与对应制品版本
 
-- **产品版本**：当前候选为 PowerPoint 0.1.2.0、Visio 0.1.4.0；0.1.1.0 / 0.1.3.0 的 L3 宿主结论是旧制品历史基线
+- **仓库边界（2026-10-09）**：PowerPoint / Visio 加载项已独立至 PatentMarker-OfficeAddins 仓库，使用独立 `main` 和 Office 专属 CI；CAD 仓库保留 Word 字典导出器与 `.dict.json` 生产端。两仓通过[字典文件契约](docs/dictionary-contract.md)协作，Office 不再链接 CAD 源码。\r\n\r\n- **产品版本**：当前候选为 PowerPoint 0.1.2.0、Visio 0.1.4.0；0.1.1.0 / 0.1.3.0 的 L3 宿主结论是旧制品历史基线
 
 - **最新结论状态**：2026-10-01 的干净源码构建、PPT 7/7 与 Visio 24/24 代码测试、隔离安装回滚/卸载通过；制品身份见[推送前验证](test-evidence/office-release-validation-20261001.md)。2026-10-03 同一安装 DLL 在本机 Office 16 x64 完成 PPT 四方向鼠标画线/选线，Visio 原生直线和直角连接线的鼠标选线、静态连接点粘合、目标跟随、一次撤销与重做；两端面板目检、保存及从界面冷重开通过，字典字节/属性不变。所列标图用户路径记为本机 L3，见[鼠标与视觉验收](test-evidence/office-visual-validation-20261003.md)。官方截图仍超时，实际输入使用用户授权的备用工具。同日补验本机 Visio 16 的旧 VSD 格式转换、原生新增标注、保存和冷重开，页面及绑定字段完全相同，见[本机补充验收](test-evidence/office-local-validation-20261003.md)。Office 2010 x86、Windows 7、真实旧版 Visio 宿主和复杂组未验。2026-09-28 必要负例跳过的总体结论仍保留更正为 SKIP，见[历史记录](test-evidence/office-cold-start-20260928.md)。
 
@@ -10,11 +10,11 @@
 
 - **同日补充用户路径**：安装版 Word 单 DWG 手动导出、多 DWG 取消与明确手选→PPT 读取、关联保存与独立冷重开通过；Visio 导入 PNG 静态连接点的原生粘合、标注、图片移动跟随及独立冷重开通过。字典及非产品资产不变。一个 Visio 冷实例在文件打开前退出的原因仍未确认，未称修复；只把后续完成的运行计为 L3，见[补充验收](test-evidence/office-local-validation-20261003.md)。
 
-- **2026-09-28 代码债校准**：PPT 和 Visio 仍独立编译为各自的 DLL，并没有复用 CAD 字典 IO、面板或宿主代码。二者现在链接同一组 Office 字典 DTO/只读解析器、COM 扩展接口和诊断日志源码；CAD 共享层只链接 `NumberIdentity.cs`。新的共享源码经 PPT/Visio 代码测试和五版 CAD 构建核对。本文历史 L3 结论仍绑定对应验收记录中的旧包哈希，不能外推到本次新构建。
+- **2026-09-28 历史代码债校准**：PPT 和 Visio 仍独立编译为各自的 DLL，并没有复用 CAD 字典 IO、面板或宿主代码。当时二者已经链接同一组 Office 字典 DTO/只读解析器、COM 扩展接口和诊断日志源码；当时 CAD 共享层也链接了编号实现，2026-10-09 拆分时改为各仓独立实现。新的共享源码经 PPT/Visio 代码测试和五版 CAD 构建核对。本报告中的 L3 结论仍绑定各自验收记录里的旧包和宿主环境，不能外推到其他构建。
 
 ## 结论
 
-PowerPoint 方向已有可构建的 .NET Framework 4.0 C# COM 加载项原型，功能路径包括手选字典并写入演示文稿 Custom XML、定时重读字典、把所选原生直线与编号文字分组并写入 Tags，以及扫描全部幻灯片的产品标注组检查漏标。Office 不复用 CAD 的字典 IO、宿主交互或面板。2026-09-28 起 PPT 与 Visio 共同链接 Office 专用的字典模型/解析器、COM 扩展接口和诊断实现；两端仍各自编译到独立 DLL。跨 CAD/Office 的源码复用限于 `NumberIdentity`。
+PowerPoint 方向已有可构建的 .NET Framework 4.0 C# COM 加载项原型，功能路径包括手选字典并写入演示文稿 Custom XML、定时重读字典、把所选原生直线与编号文字分组并写入 Tags，以及扫描全部幻灯片的产品标注组检查漏标。Office 不复用 CAD 的字典 IO、宿主交互或面板。2026-09-28 起 PPT 与 Visio 共同链接 Office 专用的字典模型/解析器、COM 扩展接口和诊断实现；两端仍各自编译到独立 DLL。CAD 与 Office 不再共享源码；双方遵守相同的编号比较契约。
 
 构建及隔离安装/卸载故障回归已通过。产品 DLL 已安装到当前用户目录；COM 注册修复后的 Office 16 x64 全新 PowerPoint 进程确实加载了产品 DLL。限定场景中，已通过面板绑定相对路径字典、在面板执行标注和整份漏标检查、保存演示文稿、关闭 PowerPoint、再以全新进程打开保存产物，并由面板检查到编号 1、2 均已标注。修复前 `SlideID` 和 `FlipH` 两项运行时错误均有已安装加载项的真实红灯日志；修复后同一标注操作及反向斜线场景转绿。
 
@@ -26,7 +26,7 @@ PowerPoint 方向已有可构建的 .NET Framework 4.0 C# COM 加载项原型，
 
 | 主题           | 更正后的结论                                                                                                                                                                                                           |
 | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| CAD 代码复用范围   | 旧报告称整套 CAD 面板、多个 IO 类可直接链接，范围过大。面板与字典加载路径依赖 AutoCAD 文档、命令、Editor、实体及会话服务。本原型只链接 `cad-plugin/Shared/IO/NumberIdentity.cs`；PowerPoint 面板与字典 DTO/只读解析器独立实现，不链接 CAD 的 `DictLoader`、`DictWriter`、`ConfigLoader` 或 UI。 |
+| CAD 代码复用范围   | 旧报告称整套 CAD 面板、多个 IO 类可直接链接，范围过大。面板与字典加载路径依赖 AutoCAD 文档、命令、Editor、实体及会话服务。本原型在独立仓库中维护符合相同规则的 `NumberIdentity.cs`；PowerPoint 面板与字典 DTO/只读解析器独立实现，不链接 CAD 的 `DictLoader`、`DictWriter`、`ConfigLoader` 或 UI。 |
 | Word 字典命名    | 不是按 PPT/Word 同名自动配对，也不是“精确匹配 → 包含匹配”。`vba/AutoExport.bas` 的当前行为是：无 DWG 时用 Word 文件主名；一个 DWG 时用该 DWG 主名；多个 DWG 时需明确选择，自动导出只复用当前 Word 文档运行中记住的选择，未选择时失败关闭。                                                          |
 | CLR 并行加载     | “Office 进程只能装一个 CLR，先装 CLR 2 就必然阻止 CLR 4”过于绝对。.NET Framework 4 支持进程内 CLR 并行宿主；但具体 Office 主机、COM 激活策略与已有加载项仍需实机组合验证。不能把多 CLR 自动当作冲突，也不能据此承诺所有组合兼容。                                                                |
 | Visio 窗口类型常量 | 锚栏窗口示例使用 `visAnchorBarAddon`（值 10）；`visDockedStencilAddon`（值 11）表示具有停靠模具行为的附加窗口。当前 Visio 加载项采用独立 WinForms 浮动面板，没有使用锚栏常量；冷启动后可独立枚举并从最小化恢复，面板路径输入、标注与漏标检查已通过。 |
@@ -74,7 +74,7 @@ PowerPoint 方向已有可构建的 .NET Framework 4.0 C# COM 加载项原型，
 | Windows                     | Windows 10 Pro build `19045`                                                                                                                                                          | 注册表只读核对                       |
 | .NET Framework              | Release `533325`，版本字符串 `4.8.09037`，对应 .NET Framework 4.8.1                                                                                                                            | 注册表只读核对                       |
 | Office PIA                  | 本项目不引用 PIA；编译基于系统 .NET Framework 4.0 targeting pack 与 COM 迟绑定                                                                                                                         | 源码/项目文件核对                     |
-| 编译                          | `office-com-addin/build.ps1`；net40 Release 成功，0 warning、0 error；发布暂存 DLL 哈希核对通过                                                                                                       | L0 PASS                       |
+| 编译                          | `./build.ps1`；net40 Release 成功，0 warning、0 error；发布暂存 DLL 哈希核对通过                                                                                                       | L0 PASS                       |
 | 安装回归                        | 唯一临时目录和隔离 HKCU 分支；覆盖首次安装中途失败、重复安装、升级写注册表后故障回滚、卸载，并核对无关加载项哨兵值不变                                                                                                                        | 安装器回归 PASS；不是 Office 宿主证据     |
 | 实际部署                        | Office 64 位产品键 `HKCU\Software\Microsoft\Office\PowerPoint\Addins\PatentOffice.PowerPointAddIn` 的 `LoadBehavior=3`；COM CodeBase 指向用户 LocalAppData 产品 DLL；后续冷启动日志确认该 DLL 已加载 | 安装检查 PASS；宿主加载 PASS           |
 | 已部署加载项 DLL                  | `%LOCALAPPDATA%\PatentMarker\OfficeAddin\PowerPoint\PatentOffice.PowerPoint.dll`，历史 0.1.1.0 SHA-256 `11991315EF0631F1893B113415D5D4B4E975A33A8CFCAC9C616E5306B10EEC79`，与 2026-09-27 候选 ZIP 包内 DLL 一致；前一 0.1.1.0 候选为 `3135C19BEFAD7A8831347E8876867E9E68A8CA87A21DF884F41C232FDC4A287B` | 当前候选、部署及日志中的运行加载路径/外部哈希 PASS |
@@ -128,7 +128,7 @@ PowerPoint 方向已有可构建的 .NET Framework 4.0 C# COM 加载项原型，
 
 ### 修复后回归证据（2026-09-24）
 
-- 源码修复：选线归属取自 `line.Parent`（其父对象即幻灯片）；端点方向读取 `Shape.HorizontalFlip` / `Shape.VerticalFlip`。`office-com-addin/build.ps1` 的 net40 Release 构建成功，0 warnings、0 errors。
+- 源码修复：选线归属取自 `line.Parent`（其父对象即幻灯片）；端点方向读取 `Shape.HorizontalFlip` / `Shape.VerticalFlip`。`./build.ps1` 的 net40 Release 构建成功，0 warnings、0 errors。
 - 业务回归版本：面板标注场景用的候选与实际加载文件 SHA-256 均为 `E6F43BFD4EFC720AD85C56862A45641AB500DDAAEB93B0AA37105EC5AFB8FE05`。run `26634ed58381454d986e620aae86918f` 是修复版冷启动；`ae932fa13c1a47409e968031fe2504ad` 是保存产物后的冷重开。两次 `OnConnection`、`OnAddInsUpdate`、`OnStartupComplete` 均为 PASS。
 - 同场景红绿：run `6702a05008c9439b9aa9c6dc72c83438` 在原生直线选择有效、面板按钮已按下的情况下记录 `FlipH` 读取 FAIL；run `26634ed58381454d986e620aae86918f` 用同一已安装面板操作标注原生水平线，记录 `annotation.create PASS number=2;slide_id=256`。这证明错误穿过安装、冷启动、UI 面板和 PowerPoint COM 调用后被实际复现并修复，不是单测结果。
 - 翻转方向：同一 run 中，`VerticalFlip=True` 的斜线创建编号 1 组成功；PowerPoint 对象模型随后读到线条 Left=80、Top=230、Width=140、Height=70、VerticalFlip=-1，编号文字框左上角为 48、292.6351，符合起点 (80,300)。反向斜线 `HorizontalFlip=-1` 在第二页的面板标注也记录 PASS，SlideID=257。
@@ -166,7 +166,7 @@ Win7 + Office 2010 x86 仍无目标环境证据；Visio 的历史结果见下节
 
 ## 独立 Word → Visio 加载项
 
-Visio 已作为独立实现开始落地，未把 PowerPoint 的形状组、Tags 或 Custom XML 直接搬入 Visio。产品代码位于 office-com-addin/src/PatentOffice.Visio，构建及独立安装器入口位于 office-com-addin/；具体使用方式、对象结构与限制见 [Visio 原型说明](visio-prototype.md)。
+Visio 已作为独立实现开始落地，未把 PowerPoint 的形状组、Tags 或 Custom XML 直接搬入 Visio。产品代码位于 `src/PatentOffice.Visio/`，构建和安装器入口位于仓库根目录；具体使用方式、对象结构与限制见 [Visio 原型说明](visio-prototype.md)。
 
 首轮交互采用 Visio 原生一维线：用户从编号位置画到目标，选中线后绑定编号。代码保留所选线条与现有连接关系，只在终点写箭头；编号框和引线保留为两个对象，各自以 ShapeSheet User 单元格保存产品标识、编号、版本及配对 ID。文档绑定信息也存于当前 Visio 文档的 User 单元格。全稿检查遍历前景页，背景页不重复计数；同号多次标注合法，字典外编号和损坏标注单独报告。
 
@@ -180,9 +180,9 @@ Visio 已作为独立实现开始落地，未把 PowerPoint 的形状组、Tags 
 
 | 检查 | 结果 | 证据 |
 |---|---|---|
-| net40 Release 构建 | PASS，0 warning、0 error | office-com-addin/build-visio.ps1；程序集版本 0.1.1.0 |
+| net40 Release 构建 | PASS，0 warning、0 error | ./build-visio.ps1；程序集版本 0.1.1.0 |
 | 构建候选与暂存副本 | PASS，SHA-256 相同 | 当前候选及从 ZIP 安装的 DLL SHA-256 为 `6D211D3F8F8A3884F0F0823452E8A234749AA05E602BF2E57D5C0BF16DD2830B` |
-| 纯函数、字典解析与扫描规则 | PASS，14/14 | dotnet test office-com-addin/tests/PatentOffice.Visio.CodeTests，net48；新增跨页面残件误配与同路径重开面板状态红绿回归 |
+| 纯函数、字典解析与扫描规则 | PASS，14/14 | dotnet test tests/PatentOffice.Visio.CodeTests，net48；新增跨页面残件误配与同路径重开面板状态红绿回归 |
 | 安装器隔离回归 | PASS | 首装故障回滚、正常安装、升级故障回滚、重复安装、卸载；安装目录外文件哨兵与无关注册项哨兵保持不变 |
 | PowerShell 脚本解析 | PASS | Visio 构建、模块、安装、卸载与验证脚本均解析成功 |
 | 安装及注册 | PASS | `%LOCALAPPDATA%\PatentMarker\OfficeAddin\Visio`；HKCU 64 位 `Software\Microsoft\Visio\Addins\PatentOffice.VisioAddIn` 的 `LoadBehavior=3`；COM CodeBase 指向已安装产品 DLL |
@@ -229,4 +229,4 @@ Visio 已作为独立实现开始落地，未把 PowerPoint 的形状组、Tags 
 | [.NET Framework Release 值检查](https://learn.microsoft.com/en-us/dotnet/framework/install/how-to-determine-which-versions-are-installed)                                                              | Release `533325` 在适用系统上代表 .NET Framework 4.8.1                   |
 | [Office COM Add-in 注册](https://learn.microsoft.com/en-us/previous-versions/office/troubleshoot/office-developer/office-com-add-in-using-visual-c)                                                   | `IDTExtensibility2`、HKCU Office Addins 与典型 `LoadBehavior=3` 注册模式 |
 | `vba/AutoExport.bas`                                                                                                                                                                                | 当前 Word 导出目录、DWG 目标选择、记忆选择及 `.dict.json` 文件名规则                   |
-| `cad-plugin/Shared/IO/NumberIdentity.cs`                                                                                                                                                            | 编号 Trim 与大小写不敏感比较规则；也是本原型唯一链接的 CAD 源文件                           |
+| `src/PatentOffice.Shared/NumberIdentity.cs`                                                                                                                                                            | 本仓库维护的编号比较实现；Trim 后按大小写不敏感规则比较，不再链接 CAD 源码                           |

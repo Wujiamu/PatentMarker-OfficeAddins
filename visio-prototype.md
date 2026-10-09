@@ -45,16 +45,16 @@ Visio 路线利用一维连接线和用户已有的粘合关系。它不复用 P
 从仓库根目录运行：
 
 ```powershell
-./office-com-addin/build-visio.ps1
-./office-com-addin/verify-visio-installer.ps1
-./office-com-addin/package-visio.ps1
+./build-visio.ps1
+./verify-visio-installer.ps1
+./package-visio.ps1
 ```
 
 本机安装和卸载入口：
 
 ```powershell
-./office-com-addin/install-visio-addin.ps1
-./office-com-addin/uninstall-visio-addin.ps1
+./install-visio-addin.ps1
+./uninstall-visio-addin.ps1
 ```
 
 安装目录为 `%LOCALAPPDATA%\PatentMarker\OfficeAddin\Visio`。产品专属 HKCU 注册项和所有权清单用于保护升级回滚及卸载范围。隔离安装回归覆盖首装失败恢复、重复安装、升级失败恢复、卸载和旁边文件/无关注册项哨兵。

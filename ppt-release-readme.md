@@ -26,10 +26,10 @@
 
 ## 验证边界
 
-2026-10-01 的代码与隔离安装门禁通过：两个 net40 产品构建、PowerPoint 7 项代码测试及安装失败回滚/卸载哨兵检查。当前 0.1.2.0 DLL 在本机 PowerPoint 16 x64 的真实面板上完成绑定、两页编号标注、整稿漏标检查及字典损坏后的恢复，字典逐字节不变。线条由公共 COM 预先准备；第二页通过键盘选线。最终 ZIP、实际加载 DLL、保存产物冷重开和限定 L3 范围见源码仓库的 `office-com-addin/test-evidence/office-release-validation-20261001.md`。
+2026-10-01 的代码与隔离安装门禁通过：两个 net40 产品构建、PowerPoint 7 项代码测试及安装失败回滚/卸载哨兵检查。当前 0.1.2.0 DLL 在本机 PowerPoint 16 x64 的真实面板上完成绑定、两页编号标注、整稿漏标检查及字典损坏后的恢复，字典逐字节不变。线条由公共 COM 预先准备；第二页通过键盘选线。最终 ZIP、实际加载 DLL、保存产物冷重开和限定 L3 范围见本仓库的 [`test-evidence/office-release-validation-20261001.md`](test-evidence/office-release-validation-20261001.md)。
 
-2026-10-03 同一安装版0.1.2.0在本机PowerPoint16 x64通过四方向鼠标拖画、取消后鼠标选线、编号起点/箭头终点目检、重复编号及整稿检查、默认/最低面板尺寸、保存后正常冷启动并从界面重开。字典字节及属性不变。官方截图仍超时，用户授权的备用工具取得真实像素并发送输入。证据见源码仓库的 `office-com-addin/test-evidence/office-visual-validation-20261003.md`。0.1.1.0 的键盘插线、跨卷绑定和多文稿历史结果只适用于其旧包。
+2026-10-03 同一安装版0.1.2.0在本机PowerPoint16 x64通过四方向鼠标拖画、取消后鼠标选线、编号起点/箭头终点目检、重复编号及整稿检查、默认/最低面板尺寸、保存后正常冷启动并从界面重开。字典字节及属性不变。官方截图仍超时，用户授权的备用工具取得真实像素并发送输入。证据见本仓库的 [`test-evidence/office-visual-validation-20261003.md`](test-evidence/office-visual-validation-20261003.md)。0.1.1.0 的键盘插线、跨卷绑定和多文稿历史结果只适用于其旧包。
 
-同日补验安装版 Word 的单 DWG 导出、多个 DWG 取消与手选，再由 PPT 面板分别读取两份真实输出、检查漏标、保存关联及独立冷重开，均通过。Word / DWG / PPT 主名不同，关联按对应相对路径恢复；字典字节/属性、普通形状及 Word 非产品模板文件不变。该轮只验证手动导出和 DWG 文件名哨兵，不验证真实图纸内容或自动保存导出；见源码仓库的 `office-com-addin/test-evidence/office-local-validation-20261003.md`。
+同日补验安装版 Word 的单 DWG 导出、多个 DWG 取消与手选，再由 PPT 面板分别读取两份真实输出、检查漏标、保存关联及独立冷重开，均通过。Word / DWG / PPT 主名不同，关联按对应相对路径恢复；字典字节/属性、普通形状及 Word 非产品模板文件不变。该轮只验证手动导出和 DWG 文件名哨兵，不验证真实图纸内容或自动保存导出；见本仓库的 [`test-evidence/office-local-validation-20261003.md`](test-evidence/office-local-validation-20261003.md)。
 
 Windows 7 + Office 2010 x86 仍待目标环境验证，.NET Framework 4.0 编译目标不代表这些旧环境已通过。加载项不导入图片，不提供 CAD 式幻灯片点击取点，不回写 `.dict.json`。
