@@ -5,4 +5,6 @@
 *.suo
 /dist/
 /release/
+/test-evidence/*
+!/test-evidence/*.md
 /test-evidence/code-results/
